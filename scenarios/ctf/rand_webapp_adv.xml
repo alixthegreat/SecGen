@@ -30,7 +30,7 @@
 
   <system>
     <system_name>web_server</system_name>
-    <base type="server" distro="Debian 9"/>
+    <base type="server" distro="Debian 12"/>
 
     <input into_datastore="IP_addresses">
       <value>172.10.0.2</value>
