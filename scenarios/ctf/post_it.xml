@@ -107,7 +107,7 @@
   <system>
     <system_name>linux_server</system_name>
 
-    <base platform="linux" distro="Debian 7.8" type="server"/>
+    <base distro="Debian 12" type="desktop" name="KDE"/>
 
     <input into_datastore="user_accounts_server">
       <generator type="account">
