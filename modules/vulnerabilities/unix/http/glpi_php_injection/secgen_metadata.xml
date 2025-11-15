@@ -49,10 +49,12 @@
   <software_name>GLPI Management Suite</software_name>
   <software_license>GNU GPLv3</software_license>
 
-  <!-- disable faulty module (TODO: FIXME module is vulnerable/exploitable but not discoverable or functioning as normal) -->
+  <!-- disable faulty module (TODO: FIXME module is vulnerable/exploitable but not discoverable or functioning as normal)
   <conflict>
     <name>.*</name>
   </conflict>
+  Enabled again for testing purposes
+  -->
 
   <requires>
     <module_path>.*apache.*compatible.*</module_path>
