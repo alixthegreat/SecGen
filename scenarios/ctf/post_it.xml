@@ -206,6 +206,7 @@
     <utility module_path=".*/handy_cli_tools"/>
     <utility module_path=".*/nmap"/>
     <utility module_path=".*/kali_pwtools"/>
+    <utility module_path=".*/gcc"/>
 
     <network type="private_network" >
       <input into="IP_address">
