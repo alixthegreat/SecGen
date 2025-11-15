@@ -202,7 +202,7 @@
 
   <system>
     <system_name>second_server</system_name>
-    <base distro="Debian 12" type="Desktop"/>
+    <base distro="Debian 12" type="desktop"/>
 
     <!-- user accounts on the server, with matching usernames and passwords, but with flags to find -->
     <input into_datastore="user_accounts_server">
