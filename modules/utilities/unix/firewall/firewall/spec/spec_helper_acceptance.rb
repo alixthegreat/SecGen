@@ -32,7 +32,7 @@ RSpec.configure do |c|
     # Install module and dependencies
     hosts.each do |host|
       copy_module_to(host, :source => proj_root, :module_name => 'firewall')
-      on host, puppet('module install puppetlabs-stdlib --version 3.2.0')
+      on host, puppet('module install puppetlabs-stdlib --version 8.6.0')
 
       # the ubuntu-14.04 docker image doesn't carry the iptables command
       apply_manifest_on host, 'package { "iptables": ensure => installed }' if fact('osfamily') == 'Debian'
