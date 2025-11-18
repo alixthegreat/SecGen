@@ -1,0 +1,140 @@
+# active_directory::dns_server
+#
+# A class to manage DNS servers on Windows 2012 R2 and 2016
+#
+# @summary A class to manage DNS servers on Windows 2012 R2 and 2016
+#
+# @param dns_server_name DNS Server name.
+# @param addressanswerlimit Number of addresses the server will return, 0 is unlimited or a  range is 5 to 28.
+# @param allowupdate Specifies whether the DNS Server accepts dynamic update requests.
+# @param autocacheupdate Indicates whether the DNS Server attempts to update its cache entries using data from root servers.
+# @param autoconfigfilezones Indicates which standard primary zones that are authoritative for the name of the DNS Server must be updated 
+#   when the name server changes.
+# @param bindsecondaries Enables the DNS server to communicate with non-Microsoft DNS servers that use DNS BIND service.
+# @param bootmethod Determines the source of information that the DNS server uses to start, such as settings to configure the DNS Service, 
+#   a list of authoritative zones, and configuration settings for the zones.
+# @param enabledirectorypartitions Specifies whether support for application directory partitions is enabled on the DNS Server.
+# @param enablednssec Specifies whether the DNS Server includes DNSSEC-specific RRs, KEY, SIG, and NXT in a response.
+# @param enableednsprobes Specifies the behavior of the DNS Server. When TRUE, the DNS Server always responds with OPT resource records 
+#   according to RFC 2671, unless the remote server has indicated it does not support EDNS in a prior exchange. If FALSE, the DNS Server 
+#   responds to queries with OPTs only if OPTs are sent in the original query.
+# @param eventloglevel Determines which DNS events go to the Event Viewr. '0' None, '1' Errors only, '2' Errors and warnings, '4' All 
+#   events.
+# @param forwarddelegations Specifies whether queries to delegated sub-zones are forwarded
+# @param forwarders A comma separated string of fowarder addresses.
+# @param forwardingtimeout Time, in seconds, a DNS Server forwarding a query will wait for resolution from the forwarder before attempting 
+#   to resolve the query itself.
+# @param listening_addresses A comma separated string of listening addresses.
+# @param localnetpriority Determines the order in which the DNS server returns A records when it has multiple A records for the same name.
+# @param logfilemaxsize Size of the DNS Server debug log, in bytes.
+# @param logfilepath File name and path for the DNS Server debug log.
+# @param logipfilterlist List of IP addresses used to filter DNS events written to the debug log.
+# @param loosewildcarding Indicates whether the DNS Server performs loose wildcarding.
+# @param maxcachettl Maximum time, in seconds, the record of a recursive name query may remain in the DNS Server cache.
+# @param maxnegativecachettl Maximum time, in seconds, a name error result from a recursive query may remain in the DNS Server cache.
+# @param namecheckflag Indicates the set of eligible characters to be used in DNS names.
+# @param norecursion Indicates whether the DNS Server performs recursive look ups.
+# @param recursionretry Elapsed seconds before retrying a recursive look up
+# @param recursiontimeout Elapsed seconds before the DNS Server gives up recursive query.
+# @param roundrobin Indicates whether the DNS Server round robins multiple A records.
+# @param rpcprotocol RPC protocol or protocols over which administrative RPC runs (bitmap value).
+# @param scavenginginterval Interval, in hours, between two consecutive scavenging operations performed by the DNS Server.
+# @param secureresponses Indicates whether the DNS Server exclusively saves records of names in the same subtree as the server that 
+#   provided them.
+# @param sendport Port on which the DNS Server sends UDP queries to other servers.
+# @param strictfileparsing Indicates whether the DNS Server parses zone files strictly.
+# @param updateoptions Restricts the type of records that can be dynamically updated on the server, used in addition to the AllowUpdate 
+#   settings on Server and Zone objects.
+# @param writeauthorityns Specifies whether the DNS Server writes NS and SOA records to the authority section on successful response.
+# @param xfrconnecttimeout Time, in seconds, the DNS Server waits for a successful TCP connection to a remote server when attempting a 
+#   zone transfer.
+#
+# @example
+#   class { 'active_directory::dns_server':
+#     dns_server_name => 'dns0.puppet.local',
+#   }
+#
+class active_directory::dns_server (
+  String                                  $dns_server_name,
+
+  # Uses hiera for defaults
+  Active_directory::Addressanswerlimit    $addressanswerlimit,
+  Active_directory::Bootmethod            $bootmethod,
+  Active_directory::Loglevels             $eventloglevel,
+  Active_directory::Zero_one              $allowupdate,
+  Active_directory::Zero_one              $enablednssec,
+  Active_directory::Zero_one              $enableednsprobes,
+  Active_directory::Zero_one              $forwarddelegations,
+  Active_directory::Zero_one              $roundrobin,
+  Boolean                                 $autocacheupdate,
+  Boolean                                 $bindsecondaries,
+  Boolean                                 $enabledirectorypartitions,
+  Boolean                                 $localnetpriority,
+  Boolean                                 $loosewildcarding,
+  Boolean                                 $norecursion,
+  Boolean                                 $secureresponses,
+  Boolean                                 $strictfileparsing,
+  Boolean                                 $writeauthorityns,
+  Integer                                 $autoconfigfilezones,
+  Integer                                 $forwardingtimeout,
+  Integer                                 $logfilemaxsize,
+  Integer                                 $maxcachettl,
+  Integer                                 $maxnegativecachettl,
+  Integer                                 $namecheckflag,
+  Integer                                 $recursionretry,
+  Integer                                 $recursiontimeout,
+  Integer                                 $rpcprotocol,
+  Integer                                 $scavenginginterval,
+  Integer                                 $sendport,
+  Integer                                 $updateoptions,
+  Integer                                 $xfrconnecttimeout,
+  Optional[String]                        $forwarders,
+  Optional[Variant[Array[String],String]] $logipfilterlist,
+  String                                  $listening_addresses,
+  String                                  $logfilepath,
+) {
+
+  if !($facts['os']['family'] == 'windows' and $facts['os']['release']['major'] =~ /2012 R2|2016|2019/) {
+    fail("This class is for Windows 2012 R2, 2016 and 2019, not ${facts['os']['family']} and ${facts['os']['release']['major']}")
+  }
+
+  require active_directory::rsat_dns
+
+  dsc_xdnsserversetting { "${dns_server_name}_dns_server":
+    dsc_name                      => "${dns_server_name}_dns_server",
+    dsc_addressanswerlimit        => $addressanswerlimit,
+    dsc_allowupdate               => $allowupdate,
+    dsc_autocacheupdate           => $autocacheupdate,
+    dsc_autoconfigfilezones       => $autoconfigfilezones,
+    dsc_bindsecondaries           => $bindsecondaries,
+    dsc_bootmethod                => $bootmethod,
+    dsc_enabledirectorypartitions => $enabledirectorypartitions,
+    dsc_enablednssec              => $enablednssec,
+    dsc_enableednsprobes          => $enableednsprobes,
+    dsc_eventloglevel             => $eventloglevel,
+    dsc_forwarddelegations        => $forwarddelegations,
+    dsc_forwarders                => $forwarders,
+    dsc_forwardingtimeout         => $forwardingtimeout,
+    dsc_listenaddresses           => $listening_addresses,
+    dsc_localnetpriority          => $localnetpriority,
+    dsc_logfilemaxsize            => $logfilemaxsize,
+    dsc_logfilepath               => $logfilepath,
+    dsc_logipfilterlist           => $logipfilterlist,
+    dsc_loosewildcarding          => $loosewildcarding,
+    dsc_maxcachettl               => $maxcachettl,
+    dsc_maxnegativecachettl       => $maxnegativecachettl,
+    dsc_namecheckflag             => $namecheckflag,
+    dsc_norecursion               => $norecursion,
+    dsc_recursionretry            => $recursionretry,
+    dsc_recursiontimeout          => $recursiontimeout,
+    dsc_roundrobin                => $roundrobin,
+    dsc_rpcprotocol               => $rpcprotocol,
+    dsc_scavenginginterval        => $scavenginginterval,
+    dsc_secureresponses           => $secureresponses,
+    dsc_sendport                  => $sendport,
+    dsc_strictfileparsing         => $strictfileparsing,
+    dsc_updateoptions             => $updateoptions,
+    dsc_writeauthorityns          => $writeauthorityns,
+    dsc_xfrconnecttimeout         => $xfrconnecttimeout,
+  }
+}
