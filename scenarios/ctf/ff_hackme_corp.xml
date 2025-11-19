@@ -101,7 +101,7 @@ Happy hacking!
   <!-- a vulnerability that is remotely exploitable for user level access, then can be escalated to root -->
   <system>
     <system_name>hackme_server</system_name>
-    <base distro="Debian" type="server"/>
+    <base distro="Debian 12" type="server"/>
 
     <utility module_path=".*/after_login_message">
       <input into="strings_to_leak">
@@ -143,7 +143,7 @@ Happy hacking!
   <!-- any random vulnerability that is remotely exploitable and can leak a flag, they might not actually end up with shell but they will get the leaked strings, including some extra flags that will need decoding -->
   <system>
     <system_name>hackmetoo_server</system_name>
-    <base distro="Debian" type="server"/>
+    <base distro="Debian 12" type="server"/>
 
     <utility module_path=".*/after_login_message">
       <input into="strings_to_leak">
@@ -193,7 +193,7 @@ Happy hacking!
   <!-- user level access, then a medium difficulty ctf style challenge -->
   <system>
     <system_name>hackmethree_server</system_name>
-    <base distro="Debian" type="server"/>
+    <base distro="Debian 12" type="server"/>
 
     <utility module_path=".*/after_login_message">
       <input into="strings_to_leak">
