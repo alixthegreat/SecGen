@@ -174,7 +174,7 @@
     </vulnerability>
 
 
-    <vulnerability module_path=".*/sudo_root.*|.*/suid_root.*">
+    <vulnerability module_path=".*/sudo_root.*">
       <input into="strings_to_leak">
         <generator type="flag_generator"/>
       </input>
