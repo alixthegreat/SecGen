@@ -25,6 +25,11 @@ class glpi_php_injection::maria {
     cwd      => '/tmp',
     command  => "./mysql_secure.sh ${db_pass}",
   }
+  -> file { '/root/.my.cnf':
+    ensure  => file,
+    content => "[client]\nuser=root\npassword=${db_pass}\n",
+    mode    => '0600',
+  }
 
   mysql::db {  'glpidb':
     user     => $db_user,

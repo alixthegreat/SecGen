@@ -4,7 +4,11 @@
 class glpi_php_injection::install {
   Exec { path => [ '/bin/', '/sbin/' , '/usr/bin/', '/usr/sbin/' ] }
 
-  ensure_packages(['mariadb-server', 'php',
+  package { 'mariadb-server':
+    ensure => '1:10.4*',
+  }
+  
+  ensure_packages(['php',
   'php-curl',
   'php-gd',
   'php-intl',
