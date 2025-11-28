@@ -27,11 +27,7 @@
   </conflict>
 
   <conflict>
-    <module_path>modules/services/unix/smb/sambaOld</module_path>
-  </conflict>
-
-  <requires>
     <module_path>modules/services/unix/smb/samba</module_path>
-  </requires>
+  </conflict>
 <!-- TODO: CyBOK -->
 </vulnerability>

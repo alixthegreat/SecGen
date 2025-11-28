@@ -1,18 +1,17 @@
 class bloodhound::install{
-    package {['apt-transport-https','unzip','wget','sudo','chmod']:
+    package {['apt-transport-https']:
     ensure => 'installed',
     }
 
-    Exec { path => ['/opt'] }
+    Exec { path => ['/bin','/usr/bin'] }
 
     # Install bloodhound
     exec { 'blood download':
-        command => 'sudo wget https://github.com/SpecterOps/BloodHound-Legacy/releases/download/v4.3.1/BloodHound-linux-x64.zip'
+        command => 'wget https://github.com/SpecterOps/BloodHound-Legacy/releases/download/v4.3.1/BloodHound-linux-x64.zip',
+        cwd => '/tmp'
     }->
     exec { 'blood unarchive':
-        command => 'sudo unzip BloodHound-linux-x64; sudo mv BloodHound-linux-x64 bloodhound' 
-    }->
-    exec { 'blood executable':
-        command => 'chmod +x ./bloodhound/BloodHound'
+        command => 'sudo unzip BloodHound-linux-x64.zip; sudo mv BloodHound-linux-x64 /opt/bloodhound',
+        cwd => '/tmp'
     }
 }   

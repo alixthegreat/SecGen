@@ -1,58 +1,26 @@
 class kerberoasting::install {
+	package {['samba-ad-dc','krb5-user']:
+    ensure => 'installed',
+    }
 
-	# Provision a Samba domain controller using the sambaAD implementation.
-	# These declarations are intentionally namespaced and contained within
-	# this class so they can be applied as part of the kerberoasting module
-	# without relying on top-level resource statements elsewhere.
+	Exec { path => ['/usr/bin','/bin'] }
 
-	class { 'samba::params':
-		sernetpkgs => false,
-	}
-
-	class { '::samba::classic':
-		domain              => 'DC',
-		realm               => 'dc.kakwa.fr',
-		smbname             => 'SMB',
-		join_domain         => false,
-		sambaloglevel       => 3,
-		logtosyslog         => true,
-		manage_winbind      => false,
-		sambaclassloglevel  => {
-			'smb'     => 2,
-			'idmap'   => 10,
-			'winbind' => 10,
-		},
-		globaloptions       => {
-			'server string'      => 'Domain Controler',
-			'winbind cache time' => 10,
-		},
-		globalabsentoptions => [
-			'idmap_ldb:use rfc2307',
-		],
-	}
-
-	::samba::idmap { 'Domain DC':
-		domain      => 'DC',
-		idrangemin  => 10000,
-		idrangemax  => 19999,
-		backend     => 'ad',
-		schema_mode => 'rfc2307',
-	}
-
-	::samba::idmap { 'Domain *':
-		domain     => '*',
-		idrangemin => 100000,
-		idrangemax => 199999,
-		backend    => 'tdb',
-	}
-
-	::samba::share { 'Test Share':
-		path    => '/srv/test/',
-		options => {
-			'comment'   => 'My test share that I want',
-			'browsable' => 'Yes',
-			'read only' => 'No',
-		},
-	}
-
+	exec { 'disable smb services':
+        command => 'sudo systemctl disable --now smbd nmbd winbind; sudo systemctl mask smbd nmbd winbind'
+    }->
+    exec { 'update hostname':
+        command => 'sudo hostnamectl set-hostname adserver'
+    }->
+	exec { 'add hostname to etc/hosts':
+        command => 'sudo sed -i "s/^127\.0\.0\.1\s\+desktop$/127.0.0.1       desktop adserver/" /etc/hosts'
+    }->
+	exec { 'backup smb config':
+        command => 'sudo mv /etc/samba/smb.conf /etc/samba/smb.conf.old'
+    }->
+	exec { 'provision samba ad':
+        command => 'samba-tool domain provision --server-role=dc --use-rfc2307 --dns-backend=SAMBA_INTERNAL --realm=ad.example.org --domain=DC --adminpass="c0mPL3xe_P455woRd"'
+    }->
+	exec { 'start samba ad':
+        command => 'sudo systemctl start samba-ad-dc'
+    }	
 }
