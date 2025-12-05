@@ -48,66 +48,16 @@
 
 
   <system>
-    <system_name>windows_server</system_name>
-    <base platform="windows" distro="7"/>
-
-    <input into_datastore="IP_addresses">
-      <!-- 0 windows desktop -->
-      <value>172.16.0.2</value>
-      <!-- 1 linux server -->
-      <value>172.16.0.3</value>
-      <!-- 1 kali -->
-      <value>172.16.0.4</value>
-    </input>
-
-    <utility module_path=".*/parameterised_accounts" platform="windows">
-      <input into="accounts" into_datastore="accounts">
-        <generator type="account">
-          <input into="username">
-            <generator type="random_sanitised_word">
-              <input into="wordlist">
-                <value>mythical_creatures</value>
-              </input>
-            </generator>
-          </input>
-          <input into="password">
-            <value>tiaspbiqe2r</value>
-          </input>
-          <input into="super_user">
-            <value>true</value>
-          </input>
-          <input into="strings_to_leak">
-            <generator type="flag_generator" />
-          </input>
-          <input into="leaked_filenames">
-            <value>flag.txt</value>
-          </input>
-        </generator>
-      </input>
-    </utility>
-
-    <!-- vulnerable ftp server -->
-    <vulnerability module_path=".*/easyftp_rce"/>
-
-    <network type="private_network">
-      <input into="IP_address">
-        <datastore access="0">IP_addresses</datastore>
-      </input>
-    </network>
-    <input into_datastore="spoiler_admin_pass">
-      <generator type="strong_password_generator"/>
-    </input>
-    <build type="cleanup">
-      <input into="root_password">
-        <datastore>spoiler_admin_pass</datastore>
-      </input>
-    </build>
-  </system>
-
-  <system>
     <system_name>linux_server</system_name>
 
-    <base distro="Debian 12" type="desktop" name="KDE"/>
+    <base platform="linux" distro="Debian 7.8" type="server"/>
+
+    <input into_datastore="IP_addresses">
+      <!-- 0 linux server -->
+      <value>172.16.0.2</value>
+      <!-- 1 kali -->
+      <value>172.16.0.3</value>
+    </input>
 
     <input into_datastore="user_accounts_server">
       <generator type="account">
@@ -180,9 +130,12 @@
 
     <network type="private_network">
       <input into="IP_address">
-        <datastore access="1">IP_addresses</datastore>
+        <datastore access="next">IP_addresses</datastore>
       </input>
     </network>
+    <input into_datastore="spoiler_admin_pass">
+      <generator type="strong_password_generator"/>
+    </input>
     <build type="cleanup">
       <input into="root_password">
         <datastore>spoiler_admin_pass</datastore>
@@ -210,7 +163,7 @@
 
     <network type="private_network" >
       <input into="IP_address">
-        <datastore access="2">IP_addresses</datastore>
+        <datastore access="next">IP_addresses</datastore>
       </input>
     </network>
     <build type="cleanup">
