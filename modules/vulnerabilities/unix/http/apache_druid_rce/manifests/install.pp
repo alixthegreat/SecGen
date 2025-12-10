@@ -16,12 +16,7 @@ class apache_druid_rce::install {
     home       => $user_home,
     managehome => true,
   }
-  # Force APT to use IPv4 only
-  file { '/etc/apt/apt.conf.d/99force-ipv4':
-    ensure  => file,
-    content => "Acquire::ForceIPv4 \"true\";\n",
-  }
-  -> exec { 'download-jdk8':
+  exec { 'download-jdk8':
     cwd     => '/tmp',
     command => 'wget -O jdk8.tar.gz https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u432-b06/OpenJDK8U-jdk_x64_linux_hotspot_8u432b06.tar.gz',
     creates => '/tmp/jdk8.tar.gz',
