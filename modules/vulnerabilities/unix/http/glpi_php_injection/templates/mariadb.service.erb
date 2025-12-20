@@ -1,0 +1,12 @@
+[Unit]
+Description=MariaDB 10.4 (tarball)
+After=network.target
+
+[Service]
+Type=simple
+User=<%= @user %>
+ExecStart=/opt/mariadb/bin/mariadbd --basedir=/opt/mariadb --datadir=/var/lib/mysql
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
