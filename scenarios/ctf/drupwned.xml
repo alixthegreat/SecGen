@@ -70,9 +70,6 @@
       </input>
     </utility>
 
-    <utility module_path=".*/kali_top10"/>
-    <utility module_path=".*/kali_web"/>
-
     <network type="private_network">
       <input into="IP_address">
         <datastore access="0">IP_addresses</datastore>

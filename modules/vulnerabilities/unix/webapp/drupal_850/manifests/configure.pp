@@ -15,4 +15,9 @@ class drupal_850::configure {
   }
 }
 
-# TODO: Configure database and automate drupal setup.
+# TODO Automate the following: 
+# - Remove all files from /var/lib/mysql/*
+# - Initialise mysql instance
+# - Drop old database (if present) and create new drupal database
+# - Create mysql user 'drupaluser' with password 'drupalpass' and grant all privileges on drupal database ?
+# - Enable REST module for second exploit
