@@ -139,6 +139,15 @@
       </input>
     </vulnerability>
 
+    <vulnerability access="local" privilege="root_rwx">
+      <input into="strings_to_leak">
+        <generator type="flag_generator"/>
+      </input>
+      <input into="strings_to_pre_leak">
+        <generator type="flag_generator"/>
+      </input>
+    </vulnerability>
+
     <network type="private_network">
       <input into="IP_address">
         <datastore access="1">IP_addresses</datastore>

@@ -31,7 +31,14 @@ class drupal_850::install {
         ensure => file,
         source => "puppet:///modules/drupal_850/${archive}",
     } ->
-
+    file {"/usr/local/src/drupal_pre_setup.tar.gz":
+        ensure => file,
+        source => "puppet:///modules/drupal_850/drupal_pre_setup.tar.gz",
+    } ->
+    file {"/usr/local/src/drupal_pre_setup.sql":
+        ensure => file,
+        source => "puppet:///modules/drupal_850/drupal_pre_setup.sql",
+    } ->
     exec { 'unpack-drupal':
         cwd => '/usr/local/src',
         command => "tar -xzf ${archive} -C /var/www",
