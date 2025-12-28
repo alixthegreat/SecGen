@@ -121,10 +121,10 @@
             <value>false</value>
           </input>
           <input into="leaked_filenames">
-            <value>flag</value>
+            <generator type="filename_generator"/>
           </input>
           <input into="strings_to_leak">
-            <generator type="flag_generator"/>
+            <generator type="message_generator"/>
           </input>
         </generator>
       </input>
@@ -135,15 +135,16 @@
         <generator type="flag_generator"/>
       </input>
       <input into="strings_to_pre_leak">
-        <generator type="flag_generator"/>
+        <encoder type="^(ascii|alpha)_reversible$" difficulty="low">
+            <input into="strings_to_encode">
+                <generator type="flag_generator" />
+            </input>
+        </encoder>
       </input>
     </vulnerability>
 
     <vulnerability access="local" privilege="root_rwx">
       <input into="strings_to_leak">
-        <generator type="flag_generator"/>
-      </input>
-      <input into="strings_to_pre_leak">
         <generator type="flag_generator"/>
       </input>
     </vulnerability>

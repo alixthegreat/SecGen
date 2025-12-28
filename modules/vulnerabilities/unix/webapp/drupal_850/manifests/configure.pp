@@ -1,5 +1,9 @@
 class drupal_850::configure {
 
+  $secgen_parameters = secgen_functions::get_parameters($::base64_inputs_file)
+  $strings_to_pre_leak = $secgen_parameters['strings_to_pre_leak']
+  $strings_to_leak = $secgen_parameters['strings_to_leak']
+
   Exec { path => ['/bin', '/usr/bin','/sbin','/usr/sbin']}
   
   # Apache configuration
@@ -61,8 +65,16 @@ class drupal_850::configure {
     command => 'mysql -u root drupal < /usr/local/src/drupal_pre_setup.sql',
     timeout => 600,
   }
+
+  file_line { 'pre-leak-robots-txt':
+    path    => '/var/www/drupal-8.5.0/robots.txt',
+    line    => "# ${strings_to_pre_leak}",
+    require => Exec['extract-drupal-setup'],
+  }
+  file_line { 'leak-flag-settings':
+    path  => '/var/www/drupal-8.5.0/sites/default/settings.php',
+    line  => "// ${strings_to_leak}",
+  }
+
 }
 
-# TODO
-# - Ensure settings are correctly loaded
-# - Make /var/run/mysqld persistent across reboots so socket remains
