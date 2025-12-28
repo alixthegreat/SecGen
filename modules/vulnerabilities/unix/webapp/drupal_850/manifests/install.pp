@@ -48,6 +48,10 @@ class drupal_850::install {
     }
 
     #MySQL installation
+    file { '/etc/systemd/system/mysql.service':
+        ensure => file,
+        source => "puppet:///modules/drupal_850/config/mysql.service.erb",
+    } ->
     exec { 'unpack-mysql':
         cwd => '/tmp/',
         command => "tar -xf ${longmysql}",

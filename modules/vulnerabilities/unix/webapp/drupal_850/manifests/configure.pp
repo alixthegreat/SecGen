@@ -21,29 +21,26 @@ class drupal_850::configure {
     owner  => 'mysql',
     group  => 'mysql',
     mode   => '0750',
-    recurse => true,
-    purge  => true,
-    force  => true,
-  } ->
-  file { '/var/run/mysqld':
-    ensure => directory,
-    owner  => 'mysql',
-    group  => 'mysql',
-    mode   => '0755',
   } ->
   exec {'stop-mariadb':
     command => 'systemctl stop mariadb ; systemctl disable mariadb',
   } ->
   exec {'clean-after-purge':
-    command => 'sleep 1 && rm -rf /var/lib/mysql/* && sleep 1',
+    command => 'rm -rf /var/lib/mysql/* && sleep 1',
     require => File['/var/lib/mysql'],
   } ->
   exec {'initialize-mysql':
     command => '/usr/local/mysql/bin/mysqld --initialize-insecure --user=mysql --datadir=/var/lib/mysql --lc-messages-dir=/usr/local/mysql/share',
     logoutput => true,
   } ->
+  exec {'reload-systemd-mysql':
+    command => 'systemctl daemon-reload',
+  } ->
+  exec {'enable-mysql':
+    command => 'systemctl enable mysql',
+  } ->
   exec {'start-mysql':
-    command => 'sudo /usr/local/mysql/bin/mysqld_safe --user=mysql & sleep 3',
+    command => 'systemctl start mysql',
   } ->
 
   # Drupal configuration using presetup files as can't configure fully via command line. Can still be customized after setup.
