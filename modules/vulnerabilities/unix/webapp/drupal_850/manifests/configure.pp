@@ -49,6 +49,8 @@ class drupal_850::configure {
 
   # Drupal configuration using presetup files as can't configure fully via command line. Can still be customized after setup.
   # sudo tar -czf /tmp/drupal_site_backup.tar.gz /var/www/drupal-8.5.0/ - command used to backup existing site, can be configured manually then copied to change it.
+  # mysqldump -u root drupal > drupal_backup.sql - command used to backup existing database.
+  
   exec {'extract-drupal-setup':
     command => 'tar -xzf /usr/local/src/drupal_pre_setup.tar.gz -C /',
   } ->
@@ -74,7 +76,12 @@ class drupal_850::configure {
   file_line { 'leak-flag-settings':
     path  => '/var/www/drupal-8.5.0/sites/default/settings.php',
     line  => "// ${strings_to_leak}",
+    require => Exec['extract-drupal-setup'],
   }
+
+  # TODO: 
+  # - Figure out how to dynamically set the front page so a flag can be leaked or it can be used for organisations.
+  # - Enable the REST module to make it vulnerable to CVE-2019-6340 as well.
 
 }
 
