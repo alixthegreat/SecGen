@@ -4,9 +4,7 @@ class gitlab_13102::configure {
 
   # First leaked string is the gitlab root password
   $strings_to_leak = $secgen_parameters['strings_to_leak']
-  $leaked_filenames = $secgen_parameters['leaked_filenames']
   $strings_to_pre_leak = $secgen_parameters['strings_to_pre_leak']
-  $pre_leaked_filenames = $secgen_parameters['pre_leaked_filenames']
 
   #Could amend in future to take port as parameter but threw error 502 in testing so leaving as default (80) for now
 
@@ -61,6 +59,7 @@ class gitlab_13102::configure {
     command => 'git config user.email "root@example.com"',
     cwd     => '/tmp/dev-notes',
   } ->
+  # Could be amended in future to use organisation information for realistic scenario
   exec { 'git_config_name':
     command => 'git config user.name "Developer J"',
     cwd     => '/tmp/dev-notes',

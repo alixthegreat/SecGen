@@ -17,9 +17,6 @@
   <CyBOK KA="AAA" topic="Authentication">
     <keyword>user authentication</keyword>
   </CyBOK>
-  <CyBOK KA="NS" topic="PENETRATION TESTING">
-    <keyword>SECURE SHELL (SSH)</keyword>
-  </CyBOK>
   <CyBOK KA="MAT" topic="Attacks and exploitation">
     <keyword>EXPLOITATION</keyword>
     <keyword>EXPLOITATION FRAMEWORKS</keyword>
@@ -44,9 +41,6 @@
 
   <CyBOK KA="AB" topic="Models">
     <keyword>kill chains</keyword>
-  </CyBOK>
-  <CyBOK KA="MAT" topic="Malicious Activities by Malware">
-    <keyword>cyber kill chain</keyword>
   </CyBOK>
 
   <system>
