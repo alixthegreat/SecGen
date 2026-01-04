@@ -137,9 +137,6 @@
     </utility>
 
     <vulnerability module_path=".*/gitlab_13102">
-      <input into="port">
-        <value>80</value>
-      </input>
       <input into="strings_to_leak">
         <generator type="random_sanitised_word">
         <input into="wordlist">
@@ -156,7 +153,7 @@
       </input>
     </vulnerability>
 
-    <vulnerability access="local" privilege="root_rwx">
+    <vulnerability module_path=".*/sudo_root_apt_get">
       <input into="strings_to_leak">
         <generator type="flag_generator"/>
       </input>

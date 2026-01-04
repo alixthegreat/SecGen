@@ -8,6 +8,8 @@ class gitlab_13102::configure {
   $strings_to_pre_leak = $secgen_parameters['strings_to_pre_leak']
   $pre_leaked_filenames = $secgen_parameters['pre_leaked_filenames']
 
+  #Could amend in future to take port as parameter but threw error 502 in testing so leaving as default (80) for now
+
   Exec { path => ['/bin', '/usr/bin', '/sbin', '/usr/sbin']}
 
   exec { 'set_gitlab_password':
@@ -17,7 +19,7 @@ class gitlab_13102::configure {
     command => "echo \"gitlab_rails['store_initial_root_password'] = true\" >> /etc/gitlab/gitlab.rb",
   } ->
   exec { 'reconfigure_gitlab':
-    command => '/usr/bin/gitlab-ctl reconfigure',
+    command => '/usr/bin/gitlab-ctl reconfigure > /dev/null 2>&1', # Prevents output flooding the console
     require => Exec['install_gitlab'],
     timeout => 1800,
   }
@@ -37,6 +39,11 @@ class gitlab_13102::configure {
     group   => 'git',
     mode    => '0600',
     require => Exec['set_git_home_ownership'],
+  }
+  # Pre leak to robots.txt
+  file_line { 'pre-leak-robots-txt':
+    path    => '/opt/gitlab/embedded/service/gitlab-rails/public/robots.txt',
+    line    => "# ${strings_to_pre_leak}",
   }
 
   # Leak sensitive info via git repo
