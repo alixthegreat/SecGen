@@ -10,24 +10,24 @@
         An active directory configuration which is vulnerable to kerberoasting. Find a way to exploit it.
   </description>
 
-  <type>samba</type>
-  <privilege>info_leak</privilege>
+  <type>activedirectory</type>
+  <privilege>root_rwx</privilege>
   <access>remote</access>
-  <platform>linux</platform>
+  <platform>windows</platform>
   <difficulty>medium</difficulty>
   
   <read_fact>strings_to_leak</read_fact>
+  <read_fact>leaked_filenames</read_fact>
+  <read_fact>strings_to_pre_leak</read_fact>
 
   <conflict>
-    <name>.*Kali.*</name>
+    <module_path>bases/.*</module_path>
+    <platform>linux</platform>
   </conflict>
 
-  <conflict>
-    <module_path>vulnerabilities/unix/smb/samba_symlink_traversal</module_path>
-  </conflict>
+  <requires>
+    <module_path>.*puppet_windows</module_path>
+  </requires>
 
-  <conflict>
-    <module_path>modules/services/unix/smb/samba</module_path>
-  </conflict>
 <!-- TODO: CyBOK -->
 </vulnerability>

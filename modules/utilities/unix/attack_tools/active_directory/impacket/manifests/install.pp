@@ -1,5 +1,6 @@
 class impacket::install{
-    package {['apt-transport-https','pip','python3-pip','python3.12-venv']:
+    
+    package {['apt-transport-https','pip','python3-pip','python3.12-venv', 'krb5-user']:
     ensure => 'installed',
     }
 
@@ -25,5 +26,5 @@ class impacket::install{
         provider => shell,
         cwd => '/opt/impacket',
         require => Exec['create venv']
-    }   
+    }
 }
