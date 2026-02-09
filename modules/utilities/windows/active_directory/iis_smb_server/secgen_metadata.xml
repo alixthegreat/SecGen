@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+
+<utility xmlns="http://www.github/cliffe/SecGen/utility"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://www.github/cliffe/SecGen/utility">
+  <name>IIS and SMB Server</name>
+  <author>Alix Hiscock</author>
+  <module_license>MIT</module_license>
+  <description>A utility module providing IIS and SMB server functionalities for Windows systems, to be used in Active Directory environments</description>
+
+  <type>win_services</type>
+  <platform>windows</platform>
+  
+  <conflict>
+    <module_path>bases/.*</module_path>
+    <platform>linux</platform>
+  </conflict>
+
+</utility>
