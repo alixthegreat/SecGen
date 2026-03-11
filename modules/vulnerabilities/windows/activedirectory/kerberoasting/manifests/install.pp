@@ -33,7 +33,7 @@ class kerberoasting::install {
     # Register a scheduled task to reboot at next startup (runs at SYSTEM boot, not user login)
     exec { 'register-dc-reboot':
         provider => powershell,
-        command  => '$action = New-ScheduledTaskAction -Execute "shutdown.exe" -Argument "/r /t 30 /c \"DC promotion reboot\""; $trigger = New-ScheduledTaskTrigger -AtStartup; $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries; Register-ScheduledTask -TaskName "DCPromotionReboot" -Action $action -Trigger $trigger -Settings $settings -User "SYSTEM" -RunLevel Highest -Force',
+        command  => '$action = New-ScheduledTaskAction -Execute "shutdown.exe" -Argument "/r /t 30 /c \"DC promotion reboot\""; $trigger = New-ScheduledTaskTrigger -AtStartup; $settings = New-ScheduledTaskSettingsSet; Register-ScheduledTask -TaskName "DCPromotionReboot" -Action $action -Trigger $trigger -Settings $settings -User "SYSTEM" -RunLevel Highest -Force',
         unless   => 'if ((Test-Path C:\forest-reboot-marker.txt) -or (Get-Service NTDS -ErrorAction SilentlyContinue)) { exit 0 } else { exit 1 }',
         require  => Exec['install-forest'],
     }
