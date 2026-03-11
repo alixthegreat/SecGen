@@ -1,0 +1,93 @@
+$logFile = 'C:\ad-config-log.txt'
+
+# If already completed, clean up and exit
+if (Test-Path C:\ad-config-complete.txt) {
+    Unregister-ScheduledTask -TaskName 'ADConfig' -Confirm:$false -ErrorAction SilentlyContinue
+    Unregister-ScheduledTask -TaskName 'DCPromotionReboot' -Confirm:$false -ErrorAction SilentlyContinue
+    exit 0
+}
+
+# Mark that reboot has occurred (prevents re-registering reboot)
+'rebooted' | Out-File C:\forest-reboot-marker.txt -Force
+"$(Get-Date) - AD config starting" | Out-File $logFile -Force
+
+# Wait for Active Directory Web Services to become available
+$maxWait = 600
+$elapsed = 0
+while ($elapsed -lt $maxWait) {
+    try {
+        Import-Module ActiveDirectory -ErrorAction Stop
+        Get-ADDomain -ErrorAction Stop
+        "$(Get-Date) - ADWS ready after $elapsed seconds" | Out-File $logFile -Append
+        break
+    } catch {
+        Start-Sleep -Seconds 10
+        $elapsed += 10
+    }
+}
+if ($elapsed -ge $maxWait) {
+    "$(Get-Date) - TIMEOUT waiting for AD after $maxWait seconds" | Out-File C:\ad-config-error.txt
+    exit 1
+}
+
+# Create mssql_svc user
+try {
+    if (-not (Get-ADUser -Filter {SamAccountName -eq 'mssql_svc'} -ErrorAction SilentlyContinue)) {
+        New-ADUser -Name 'mssql_svc' -SamAccountName 'mssql_svc' -AccountPassword (ConvertTo-SecureString '<%= @mssql_password %>' -AsPlainText -Force) -Enabled $true -PasswordNeverExpires $true -ErrorAction Stop
+        "$(Get-Date) - Created mssql_svc" | Out-File $logFile -Append
+    }
+} catch {
+    "$(Get-Date) - Error creating mssql_svc: $_" | Out-File C:\ad-config-error.txt -Append
+}
+
+# Disable pre-auth for kerberoasting
+try {
+    Set-ADAccountControl -Identity 'mssql_svc' -DoesNotRequirePreAuth $true -ErrorAction Stop
+    "$(Get-Date) - Disabled preauth for mssql_svc" | Out-File $logFile -Append
+} catch {
+    "$(Get-Date) - Error disabling preauth: $_" | Out-File C:\ad-config-error.txt -Append
+}
+
+# Set SPN
+try {
+    $hostname = $env:COMPUTERNAME
+    setspn -s "MSSQLSvc/$hostname.lab.local:1433" mssql_svc
+    "$(Get-Date) - Set SPN for mssql_svc" | Out-File $logFile -Append
+} catch {
+    "$(Get-Date) - Error setting SPN: $_" | Out-File C:\ad-config-error.txt -Append
+}
+
+# Create iis_svc user
+try {
+    if (-not (Get-ADUser -Filter {SamAccountName -eq 'iis_svc'} -ErrorAction SilentlyContinue)) {
+        New-ADUser -Name 'iis_svc' -SamAccountName 'iis_svc' -AccountPassword (ConvertTo-SecureString '<%= @iis_password %>' -AsPlainText -Force) -Enabled $true -PasswordNeverExpires $true -ErrorAction Stop
+        "$(Get-Date) - Created iis_svc" | Out-File $logFile -Append
+    }
+} catch {
+    "$(Get-Date) - Error creating iis_svc: $_" | Out-File C:\ad-config-error.txt -Append
+}
+
+# Set HTTP SPN for IIS
+try {
+    $appServerHost = 'app_server'
+    setspn -s "HTTP/$appServerHost.lab.local" iis_svc
+    "$(Get-Date) - Set HTTP SPN for iis_svc" | Out-File $logFile -Append
+} catch {
+    "$(Get-Date) - Error setting HTTP SPN: $_" | Out-File C:\ad-config-error.txt -Append
+}
+
+# Create student1 user
+try {
+    if (-not (Get-ADUser -Filter {SamAccountName -eq 'student1'} -ErrorAction SilentlyContinue)) {
+        New-ADUser -Name 'student1' -SamAccountName 'student1' -AccountPassword (ConvertTo-SecureString '<%= @student_password %>' -AsPlainText -Force) -Enabled $true -ErrorAction Stop
+        "$(Get-Date) - Created student1" | Out-File $logFile -Append
+    }
+} catch {
+    "$(Get-Date) - Error creating student1: $_" | Out-File C:\ad-config-error.txt -Append
+}
+
+# Mark complete and clean up scheduled tasks
+"$(Get-Date) - AD configuration complete" | Out-File $logFile -Append
+'AD configuration complete' | Out-File C:\ad-config-complete.txt
+Unregister-ScheduledTask -TaskName 'ADConfig' -Confirm:$false -ErrorAction SilentlyContinue
+Unregister-ScheduledTask -TaskName 'DCPromotionReboot' -Confirm:$false -ErrorAction SilentlyContinue
