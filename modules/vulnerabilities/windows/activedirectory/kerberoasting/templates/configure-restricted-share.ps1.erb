@@ -1,0 +1,43 @@
+# Set up restricted flag share with NTFS ACLs for mssql_svc and iis_svc
+$path = "C:\Shares\Restricted"
+
+# Ensure directory exists
+if (-not (Test-Path $path)) {
+    New-Item -Path $path -ItemType Directory -Force | Out-Null
+}
+
+# Set NTFS ACLs
+$acl = Get-Acl $path
+$acl.SetAccessRuleProtection($true, $false)
+
+# Remove all existing rules
+$acl.Access | ForEach-Object { $acl.RemoveAccessRule($_) | Out-Null }
+
+# Grant Full Control to SYSTEM
+$rule = New-Object System.Security.AccessControl.FileSystemAccessRule("SYSTEM", "FullControl", "ContainerInherit,ObjectInherit", "None", "Allow")
+$acl.AddAccessRule($rule)
+
+# Keep local administrators able to manage files in this directory.
+$rule = New-Object System.Security.AccessControl.FileSystemAccessRule("BUILTIN\Administrators", "FullControl", "ContainerInherit,ObjectInherit", "None", "Allow")
+$acl.AddAccessRule($rule)
+
+# Grant Full Control to mssql_svc
+$rule = New-Object System.Security.AccessControl.FileSystemAccessRule("LAB\mssql_svc", "FullControl", "ContainerInherit,ObjectInherit", "None", "Allow")
+$acl.AddAccessRule($rule)
+
+# Grant Full Control to iis_svc
+$rule = New-Object System.Security.AccessControl.FileSystemAccessRule("LAB\iis_svc", "FullControl", "ContainerInherit,ObjectInherit", "None", "Allow")
+$acl.AddAccessRule($rule)
+
+# Apply ACL
+Set-Acl $path $acl
+
+# Create SMB share if missing
+if (-not (Get-SmbShare -Name "Restricted" -ErrorAction SilentlyContinue)) {
+    New-SmbShare -Name "Restricted" -Path $path | Out-Null
+}
+
+# Set explicit SMB share ACLs for service accounts.
+Revoke-SmbShareAccess -Name "Restricted" -AccountName "Everyone" -Force -ErrorAction SilentlyContinue
+Grant-SmbShareAccess -Name "Restricted" -AccountName "LAB\mssql_svc" -AccessRight Full -Force | Out-Null
+Grant-SmbShareAccess -Name "Restricted" -AccountName "LAB\iis_svc" -AccessRight Full -Force | Out-Null

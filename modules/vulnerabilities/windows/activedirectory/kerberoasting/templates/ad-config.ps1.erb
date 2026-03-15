@@ -86,6 +86,18 @@ try {
     "$(Get-Date) - Error creating student1: $_" | Out-File C:\ad-config-error.txt -Append
 }
 
+# Configure restricted SMB share only after service accounts exist.
+try {
+    if (Test-Path 'C:\configure-restricted-share.ps1') {
+        & 'C:\configure-restricted-share.ps1'
+        "$(Get-Date) - Configured restricted SMB share ACLs" | Out-File $logFile -Append
+    } else {
+        "$(Get-Date) - Restricted SMB config script missing" | Out-File C:\ad-config-error.txt -Append
+    }
+} catch {
+    "$(Get-Date) - Error configuring restricted SMB share: $_" | Out-File C:\ad-config-error.txt -Append
+}
+
 # Mark complete and clean up scheduled tasks
 "$(Get-Date) - AD configuration complete" | Out-File $logFile -Append
 'AD configuration complete' | Out-File C:\ad-config-complete.txt

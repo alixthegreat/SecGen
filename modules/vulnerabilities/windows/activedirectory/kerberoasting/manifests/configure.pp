@@ -4,7 +4,8 @@ class kerberoasting::configure {
     $strings_to_leak = $secgen_parameters['strings_to_leak']
     $mssql_password = $strings_to_leak[0]
     $iis_password = $strings_to_leak[1]
-    $student_password = $strings_to_leak[2]
+	$student_password = $strings_to_leak[2]
+	$leak_password = $student_password
 	$leak_username = 'student1'
 
     # Write the AD configuration script to disk.
@@ -54,6 +55,24 @@ class kerberoasting::configure {
 		command  => 'if (-not (Get-SmbShare -Name "Public" -ErrorAction SilentlyContinue)) { New-SmbShare -Name "Public" -Path "C:\\Shares\\Public" -ReadAccess "Everyone" | Out-Null }',
 		unless   => 'if (Get-SmbShare -Name "Public" -ErrorAction SilentlyContinue) { exit 0 } else { exit 1 }',
 		require  => Exec['configure-public-smb-anonymous-access'],
+	}
+
+	file { 'C:/configure-restricted-share.ps1':
+		ensure  => file,
+		content => template('kerberoasting/configure-restricted-share.ps1.erb'),
+		require => File['C:/Shares'],
+	}
+
+	exec { 'configure-restricted-share':
+		provider => powershell,
+		command  => '& "C:\\configure-restricted-share.ps1"',
+		require  => File['C:/configure-restricted-share.ps1'],
+	}
+
+	file { 'C:/Shares/Restricted/flag.txt':
+		ensure  => file,
+		content => $strings_to_leak[3],
+		require => Exec['configure-restricted-share'],
 	}
 
 	file { 'C:/inetpub/wwwroot/index.html':
