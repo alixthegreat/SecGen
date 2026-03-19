@@ -6,6 +6,7 @@ if (-not (Test-Path $path)) {
     New-Item -Path $path -ItemType Directory -Force | Out-Null
 }
 
+
 # Set NTFS ACLs
 $acl = Get-Acl $path
 $acl.SetAccessRuleProtection($true, $false)
@@ -41,3 +42,35 @@ if (-not (Get-SmbShare -Name "Restricted" -ErrorAction SilentlyContinue)) {
 Revoke-SmbShareAccess -Name "Restricted" -AccountName "Everyone" -Force -ErrorAction SilentlyContinue
 Grant-SmbShareAccess -Name "Restricted" -AccountName "LAB\mssql_svc" -AccessRight Full -Force | Out-Null
 Grant-SmbShareAccess -Name "Restricted" -AccountName "LAB\iis_svc" -AccessRight Full -Force | Out-Null
+
+# Enforce per-file ACLs inside the share.
+function Set-RestrictedFileAcl {
+    param(
+        [string]$FilePath,
+        [string]$AllowedAccount
+    )
+
+    if (-not (Test-Path $FilePath)) {
+        return
+    }
+
+    $fileAcl = Get-Acl $FilePath
+    $fileAcl.SetAccessRuleProtection($true, $false)
+
+    # Remove all existing ACEs so each file is readable only by its target service account.
+    $fileAcl.Access | ForEach-Object { $fileAcl.RemoveAccessRule($_) | Out-Null }
+
+    $rule = New-Object System.Security.AccessControl.FileSystemAccessRule("SYSTEM", "FullControl", "None", "None", "Allow")
+    $fileAcl.AddAccessRule($rule)
+
+    $rule = New-Object System.Security.AccessControl.FileSystemAccessRule("BUILTIN\Administrators", "FullControl", "None", "None", "Allow")
+    $fileAcl.AddAccessRule($rule)
+
+    $rule = New-Object System.Security.AccessControl.FileSystemAccessRule($AllowedAccount, "ReadAndExecute", "None", "None", "Allow")
+    $fileAcl.AddAccessRule($rule)
+
+    Set-Acl -Path $FilePath -AclObject $fileAcl
+}
+
+Set-RestrictedFileAcl -FilePath "C:\Shares\Restricted\mssql.txt" -AllowedAccount "LAB\mssql_svc"
+Set-RestrictedFileAcl -FilePath "C:\Shares\Restricted\iis.txt" -AllowedAccount "LAB\iis_svc"

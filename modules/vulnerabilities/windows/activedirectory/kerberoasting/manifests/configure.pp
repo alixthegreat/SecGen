@@ -5,6 +5,8 @@ class kerberoasting::configure {
     $mssql_password = $strings_to_leak[0]
     $iis_password = $strings_to_leak[1]
 	$student_password = $strings_to_leak[2]
+	$mssql_flag = $strings_to_leak[3]
+	$iis_flag = $strings_to_leak[4]
 	$leak_password = $student_password
 	$leak_username = 'student1'
 
@@ -69,10 +71,21 @@ class kerberoasting::configure {
 		require  => File['C:/configure-restricted-share.ps1'],
 	}
 
-	file { 'C:/Shares/Restricted/flag.txt':
-		ensure  => file,
-		content => $strings_to_leak[3],
+	file { 'C:/Shares/Restricted':
+		ensure  => directory,
 		require => Exec['configure-restricted-share'],
+	}
+
+	file { 'C:/Shares/Restricted/mssql.txt':
+		ensure  => file,
+		content => $mssql_flag,
+		require => File['C:/Shares/Restricted'],
+	}
+
+	file { 'C:/Shares/Restricted/iis.txt':
+		ensure  => file,
+		content => $iis_flag,
+		require => File['C:/Shares/Restricted'],
 	}
 
 	file { 'C:/inetpub/wwwroot/index.html':
