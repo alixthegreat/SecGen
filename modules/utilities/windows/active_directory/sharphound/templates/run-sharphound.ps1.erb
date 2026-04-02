@@ -1,0 +1,94 @@
+param(
+    [switch]$ForceRun
+)
+
+$ErrorActionPreference = "Stop"
+$logPath = "C:\Tools\sharphound-run.log"
+$stdoutPath = "C:\Tools\sharphound-stdout.log"
+$stderrPath = "C:\Tools\sharphound-stderr.log"
+$outDir = "C:\inetpub\wwwroot\sharphound"
+$marker = "C:\Tools\sharphound-complete.txt"
+$exePath = "C:\Tools\SharpHound.exe"
+
+if ((Test-Path $marker) -and (-not $ForceRun)) {
+    "$(Get-Date) - Marker exists, exiting (use -ForceRun to override)." | Out-File $logPath -Append
+    exit 0
+}
+
+"$(Get-Date) - SharpHound script starting" | Out-File $logPath -Force
+
+if (-not (Test-Path $exePath)) {
+    "$(Get-Date) - SharpHound executable not found at $exePath" | Out-File $logPath -Append
+    exit 1
+}
+
+# Wait for AD to be queriable.
+$maxWait = 900
+$elapsed = 0
+while ($elapsed -lt $maxWait) {
+    try {
+        Import-Module ActiveDirectory -ErrorAction Stop
+        Get-ADDomain -ErrorAction Stop | Out-Null
+        break
+    } catch {
+        Start-Sleep -Seconds 15
+        $elapsed += 15
+    }
+}
+
+if ($elapsed -ge $maxWait) {
+    "$(Get-Date) - Timed out waiting for AD" | Out-File $logPath -Append
+    exit 1
+}
+
+New-Item -Path $outDir -ItemType Directory -Force | Out-Null
+
+"$(Get-Date) - Starting SharpHound collection" | Out-File $logPath -Append
+if (Test-Path $stdoutPath) { Remove-Item $stdoutPath -Force }
+if (Test-Path $stderrPath) { Remove-Item $stderrPath -Force }
+
+$args = "-c All --zipfilename sharphound.zip --outputdirectory `"$outDir`""
+$proc = Start-Process -FilePath $exePath -ArgumentList $args -RedirectStandardOutput $stdoutPath -RedirectStandardError $stderrPath -PassThru -WindowStyle Hidden
+
+if (-not $proc.WaitForExit(600000)) {
+    Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
+    "$(Get-Date) - SharpHound timed out after 600 seconds and was terminated" | Out-File $logPath -Append
+    if (Test-Path $stdoutPath) { Get-Content $stdoutPath | Out-File $logPath -Append }
+    if (Test-Path $stderrPath) { Get-Content $stderrPath | Out-File $logPath -Append }
+    exit 1
+}
+
+"$(Get-Date) - SharpHound exited with code $($proc.ExitCode)" | Out-File $logPath -Append
+if (Test-Path $stdoutPath) { Get-Content $stdoutPath | Out-File $logPath -Append }
+if (Test-Path $stderrPath) { Get-Content $stderrPath | Out-File $logPath -Append }
+
+$exitCode = $proc.ExitCode
+if ($exitCode -ne 0) {
+    "$(Get-Date) - SharpHound returned non-zero; attempting to normalize zip output anyway" | Out-File $logPath -Append
+}
+
+$zip = Get-ChildItem -Path $outDir -Filter "*.zip" -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+if ($zip) {
+    $normalizedZip = Join-Path $outDir "sharphound.zip"
+
+    if ($zip.FullName -ne $normalizedZip) {
+        if (Test-Path $normalizedZip) {
+            Remove-Item -Path $normalizedZip -Force
+        }
+        Move-Item -Path $zip.FullName -Destination $normalizedZip -Force
+    }
+
+    Get-ChildItem -Path $outDir -Filter "*.zip" -ErrorAction SilentlyContinue |
+        Where-Object { $_.FullName -ne $normalizedZip } |
+        Remove-Item -Force -ErrorAction SilentlyContinue
+
+    "ok" | Out-File $marker -Force
+    "$(Get-Date) - SharpHound zip ready at $outDir\sharphound.zip" | Out-File $logPath -Append
+    exit 0
+}
+
+"$(Get-Date) - No zip output produced" | Out-File $logPath -Append
+if ($exitCode -ne 0) {
+    exit $exitCode
+}
+exit 1
