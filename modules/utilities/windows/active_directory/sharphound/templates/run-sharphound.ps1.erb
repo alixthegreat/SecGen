@@ -22,24 +22,20 @@ if (-not (Test-Path $exePath)) {
     exit 1
 }
 
-# Wait for AD to be queriable.
-$maxWait = 900
-$elapsed = 0
-while ($elapsed -lt $maxWait) {
-    try {
-        Import-Module ActiveDirectory -ErrorAction Stop
-        Get-ADDomain -ErrorAction Stop | Out-Null
-        break
-    } catch {
-        Start-Sleep -Seconds 15
-        $elapsed += 15
+# Wait for the asreproasting setup to finish creating the target accounts.
+$adConfigMarker = "C:\ad-config-complete.txt"
+$maxWaitForSetup = 900
+$elapsedForSetup = 0
+while (-not (Test-Path $adConfigMarker)) {
+    if ($elapsedForSetup -ge $maxWaitForSetup) {
+        "$(Get-Date) - Timed out waiting for asreproasting setup marker $adConfigMarker" | Out-File $logPath -Append
+        exit 1
     }
+    Start-Sleep -Seconds 15
+    $elapsedForSetup += 15
 }
 
-if ($elapsed -ge $maxWait) {
-    "$(Get-Date) - Timed out waiting for AD" | Out-File $logPath -Append
-    exit 1
-}
+"$(Get-Date) - Found asreproasting setup marker $adConfigMarker after $elapsedForSetup seconds" | Out-File $logPath -Append
 
 New-Item -Path $outDir -ItemType Directory -Force | Out-Null
 
