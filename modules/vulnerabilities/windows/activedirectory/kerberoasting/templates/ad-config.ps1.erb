@@ -40,14 +40,6 @@ try {
     "$(Get-Date) - Error creating mssql_svc: $_" | Out-File C:\ad-config-error.txt -Append
 }
 
-# Disable pre-auth for kerberoasting
-try {
-    Set-ADAccountControl -Identity 'mssql_svc' -DoesNotRequirePreAuth $true -ErrorAction Stop
-    "$(Get-Date) - Disabled preauth for mssql_svc" | Out-File $logFile -Append
-} catch {
-    "$(Get-Date) - Error disabling preauth: $_" | Out-File C:\ad-config-error.txt -Append
-}
-
 # Set SPN
 try {
     $hostname = $env:COMPUTERNAME
