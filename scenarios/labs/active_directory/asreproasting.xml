@@ -50,6 +50,7 @@
     <utility module_path=".*/handy_cli_tools"/>
     <utility module_path=".*/hashcat"/>
     <utility module_path=".*/neo4j"/>
+    <utility module_path=".*/bloodhound"/>
     <utility module_path=".*/impacket"/>
 
     <network type="private_network">
@@ -96,8 +97,8 @@
       </input>
     </build>
 
-    <vulnerability module_path=".*/kerberoasting">
-      <input into="strings_to_leak" into_datastore="kerberoasting_strings_to_leak">
+    <vulnerability module_path=".*/asreproasting">
+      <input into="strings_to_leak">
         <generator type="custom_list_password">
           <input into="list_name">
             <value>ad-compliant.lst</value>
@@ -117,6 +118,8 @@
         <generator type="flag_generator"/>
       </input>
     </vulnerability>
+
+    <utility module_path=".*/sharphound" platform="windows"/>
 
 	</system>
 

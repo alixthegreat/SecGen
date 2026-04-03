@@ -1,0 +1,126 @@
+<?xml version="1.0"?>
+<scenario xmlns="http://www.github/cliffe/SecGen/scenario"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.github/cliffe/SecGen/scenario">
+
+  <name>Active Directory Exploits</name>
+  <author>Alix Hiscock</author>
+  <description>
+    A vulnerable Active Directory server. Find a way to exploit it.
+  </description>
+
+  <type>lab</type>
+  <type>attack-lab</type>
+  <difficulty>medium</difficulty>
+
+  <CyBOK KA="SOIM" topic="PENETRATION TESTING">
+    <keyword>PENETRATION TESTING - NETWORK MAPPING - RECONNAISSANCE</keyword>
+    <keyword>PENETRATION TESTING - SOFTWARE TOOLS</keyword>
+  </CyBOK>
+
+  <system>
+    <system_name>attack_vm</system_name>
+    <base distro="Kali" name="MSF"/>
+    <input into_datastore="IP_addresses">
+      <!-- 0 attack_vm -->
+      <value>172.16.0.2</value>
+      <!-- 1 windows_dc -->
+      <value>172.16.0.3</value>
+    </input>
+    <input into_datastore="spoiler_admin_pass">
+      <generator type="strong_password_generator"/>
+    </input>
+
+    <utility module_path=".*/parameterised_accounts">
+      <input into="accounts">
+        <value>{"username":"kali","password":"kali","super_user":"true","strings_to_leak":[],"leaked_filenames":[]}</value>
+      </input>
+    </utility>
+
+    <utility module_path=".*/iceweasel">
+      <input into="accounts">
+        <value>{"username":"kali","password":"kali","super_user":"true","strings_to_leak":[],"leaked_filenames":[]}</value>
+      </input>
+      <input into="autostart">
+        <value>false</value>
+      </input>
+    </utility>
+
+    <utility module_path=".*/kali_ad_prep"/>
+    <utility module_path=".*/handy_cli_tools"/>
+    <utility module_path=".*/hashcat"/>
+    <utility module_path=".*/neo4j"/>
+    <utility module_path=".*/bloodhound"/>
+    <utility module_path=".*/impacket"/>
+
+    <network type="private_network">
+      <input into="IP_address">
+        <datastore access="0">IP_addresses</datastore>
+      </input>
+    </network>
+    <build type="cleanup">
+      <input into="root_password">
+        <datastore>spoiler_admin_pass</datastore>
+      </input>
+    </build>
+  </system>
+
+  <system>
+		<system_name>windows_dc</system_name>
+		<base platform="windows" distro="server 2016"/>
+
+    <network type="private_network">
+      <input into="IP_address">
+        <datastore access="1">IP_addresses</datastore>
+      </input>
+    </network>
+
+    <utility module_path=".*/parameterised_accounts" platform="windows">
+			<input into="accounts" into_datastore="accounts">
+				<generator type="account">
+					<input into="username">
+						<value>user1</value>
+					</input>
+					<input into="password">
+						<value>password1</value>
+					</input>
+					<input into="super_user">
+						<value>true</value>
+					</input>
+				</generator>
+      </input>
+    </utility>
+
+    <build type="cleanup">
+      <input into="root_password">
+        <datastore>spoiler_admin_pass</datastore>
+      </input>
+    </build>
+
+    <vulnerability module_path=".*/kerberoasting">
+      <input into="strings_to_leak">
+        <generator type="custom_list_password">
+          <input into="list_name">
+            <value>ad-compliant.lst</value>
+          </input>
+        </generator>
+        <generator type="custom_list_password">
+          <input into="list_name">
+            <value>ad-compliant.lst</value>
+          </input>
+        </generator>
+        <generator type="custom_list_password">
+          <input into="list_name">
+            <value>ad-compliant.lst</value>
+          </input>
+        </generator>
+        <generator type="flag_generator"/>
+        <generator type="flag_generator"/>
+      </input>
+    </vulnerability>
+
+    <utility module_path=".*/sharphound" platform="windows"/>
+
+	</system>
+
+</scenario>
