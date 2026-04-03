@@ -64,6 +64,13 @@ try {
 }
 
 try {
+    Enable-ADAccount -Identity 'asrep_user1' -ErrorAction Stop
+    "$(Get-Date) - Enabled asrep_user1" | Out-File $logFile -Append
+} catch {
+    "$(Get-Date) - Error enabling asrep_user1: $_" | Out-File C:\ad-config-error.txt -Append
+}
+
+try {
     if (-not (Get-ADUser -Filter {SamAccountName -eq 'asrep_svc'} -ErrorAction SilentlyContinue)) {
         New-ADUser `
             -Name 'asrep_svc' `
@@ -83,6 +90,13 @@ try {
     "$(Get-Date) - Disabled Kerberos pre-auth for asrep_svc" | Out-File $logFile -Append
 } catch {
     "$(Get-Date) - Error disabling pre-auth for asrep_svc: $_" | Out-File C:\ad-config-error.txt -Append
+}
+
+try {
+    Enable-ADAccount -Identity 'asrep_svc' -ErrorAction Stop
+    "$(Get-Date) - Enabled asrep_svc" | Out-File $logFile -Append
+} catch {
+    "$(Get-Date) - Error enabling asrep_svc: $_" | Out-File C:\ad-config-error.txt -Append
 }
 
 
