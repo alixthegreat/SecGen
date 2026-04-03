@@ -116,6 +116,8 @@
         </generator>
         <generator type="flag_generator"/>
         <generator type="flag_generator"/>
+        <generator type="flag_generator"/>
+        <generator type="flag_generator"/>
       </input>
     </vulnerability>
 

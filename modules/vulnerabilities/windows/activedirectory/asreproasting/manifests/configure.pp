@@ -7,6 +7,8 @@ class asreproasting::configure {
     $student_password = $strings_to_leak[2]
     $asrep_user1_flag = $strings_to_leak[3]
     $asrep_svc_flag = $strings_to_leak[4]
+    $asrep_user1_pass_flag = $strings_to_leak[5]
+    $asrep_svc_pass_flag = $strings_to_leak[6]
 
 
     file { 'C:/ad-config.ps1':

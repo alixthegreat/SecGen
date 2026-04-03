@@ -1,3 +1,16 @@
+<%
+require 'base64'
+def triple_b64(text)
+    value = text.to_s
+    3.times { value = Base64.strict_encode64(value) }
+    value
+end
+
+asrep_user1_password = triple_b64(@user_password)
+asrep_svc_password = triple_b64(@svc_password)
+asrep_user1_flag = triple_b64("Well Done: #{@asrep_user1_pass_flag}")
+asrep_svc_flag = triple_b64("Well Done: #{@asrep_svc_pass_flag}")
+%>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -26,6 +39,30 @@
             color: #666;
             line-height: 1.6;
         }
+        .panel {
+            margin-top: 24px;
+            padding: 16px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            text-align: left;
+        }
+        .panel h3 {
+            margin-top: 0;
+        }
+        .panel input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 10px;
+            margin: 8px 0;
+        }
+        .panel button {
+            padding: 10px 14px;
+            cursor: pointer;
+        }
+        .result {
+            margin-top: 10px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -43,6 +80,65 @@
         <hr>
         <p><strong>Directory Collection:</strong></p>
         <p><a href="/sharphound/sharphound.zip">Download SharpHound ingest zip</a></p>
+
+        <hr>
+        <p><strong>Password Verification Rewards</strong></p>
+        <p>Submit cracked passwords to retrieve account flags.</p>
+
+        <div class="panel">
+            <h3>asrep_user1</h3>
+            <input id="asrep_user1_password" type="password" placeholder="Enter cracked password" />
+            <button onclick="_v('asrep_user1')">Verify Password</button>
+            <div id="asrep_user1_result" class="result"></div>
+        </div>
+
+        <div class="panel">
+            <h3>asrep_svc</h3>
+            <input id="asrep_svc_password" type="password" placeholder="Enter cracked password" />
+            <button onclick="_v('asrep_svc')">Verify Password</button>
+            <div id="asrep_svc_result" class="result"></div>
+        </div>
     </div>
+
+    <script>
+        const _r = {
+            asrep_user1: {
+                p: '<%= asrep_user1_password %>',
+                f: '<%= asrep_user1_flag %>'
+            },
+            asrep_svc: {
+                p: '<%= asrep_svc_password %>',
+                f: '<%= asrep_svc_flag %>'
+            }
+        };
+
+        const _d = (t) => atob(t);
+        const _t = (t) => {
+            let v = t;
+            for (let i = 0; i < 3; i++) v = _d(v);
+            return v;
+        };
+
+        window._v = function (a) {
+            const i = document.getElementById(a + '_password');
+            const o = document.getElementById(a + '_result');
+            const n = i ? i.value : '';
+
+            if (!n) {
+                o.textContent = 'Please enter a password.';
+                o.style.color = '#8b0000';
+                return;
+            }
+
+            const m = _r[a];
+            if (m && n === _t(m.p)) {
+                o.textContent = _t(m.f);
+                o.style.color = '#006400';
+            } else {
+                o.textContent = 'Invalid password.';
+                o.style.color = '#8b0000';
+            }
+        };
+    </script>
 </body>
 </html>
