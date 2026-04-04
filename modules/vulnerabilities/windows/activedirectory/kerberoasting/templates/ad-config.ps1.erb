@@ -78,6 +78,9 @@ try {
     "$(Get-Date) - Error creating student1: $_" | Out-File C:\ad-config-error.txt -Append
 }
 
+Set-ADUser -Identity 'iis_svc' -Description '<%= @iis_flag %>'
+Set-ADUser -Identity 'mssql_svc'   -Description '<%= @mssql_flag %>'
+
 # Configure restricted SMB share only after service accounts exist.
 try {
     if (Test-Path 'C:\configure-restricted-share.ps1') {
